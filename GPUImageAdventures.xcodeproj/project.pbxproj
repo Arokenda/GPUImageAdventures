@@ -6,8 +6,15 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4481EBD87953B5B2282000A8 /* libPods-GPUImageAdventures.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E35D6F2CC33B7744AB43157B /* libPods-GPUImageAdventures.a */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		0C0A3A9AA03AC581893868CD /* Pods-GPUImageAdventures.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GPUImageAdventures.debug.xcconfig"; path = "Target Support Files/Pods-GPUImageAdventures/Pods-GPUImageAdventures.debug.xcconfig"; sourceTree = "<group>"; };
 		C33A9C062D81627000E203D1 /* GPUImageAdventures.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = GPUImageAdventures.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E35D6F2CC33B7744AB43157B /* libPods-GPUImageAdventures.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-GPUImageAdventures.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		ECBE2BC6BF6C19EA42F39EB2 /* Pods-GPUImageAdventures.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-GPUImageAdventures.release.xcconfig"; path = "Target Support Files/Pods-GPUImageAdventures/Pods-GPUImageAdventures.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -36,17 +43,37 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4481EBD87953B5B2282000A8 /* libPods-GPUImageAdventures.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		3233123CD5723DDCB0988D3A /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				E35D6F2CC33B7744AB43157B /* libPods-GPUImageAdventures.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		9B2C2D8F9611A7D1245807C9 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				0C0A3A9AA03AC581893868CD /* Pods-GPUImageAdventures.debug.xcconfig */,
+				ECBE2BC6BF6C19EA42F39EB2 /* Pods-GPUImageAdventures.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		C33A9BFD2D81627000E203D1 = {
 			isa = PBXGroup;
 			children = (
 				C33A9C082D81627000E203D1 /* GPUImageAdventures */,
 				C33A9C072D81627000E203D1 /* Products */,
+				9B2C2D8F9611A7D1245807C9 /* Pods */,
+				3233123CD5723DDCB0988D3A /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -65,9 +92,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = C33A9C1E2D81627200E203D1 /* Build configuration list for PBXNativeTarget "GPUImageAdventures" */;
 			buildPhases = (
+				2E7043BC0BB8F0942CA8A675 /* [CP] Check Pods Manifest.lock */,
 				C33A9C022D81627000E203D1 /* Sources */,
 				C33A9C032D81627000E203D1 /* Frameworks */,
 				C33A9C042D81627000E203D1 /* Resources */,
+				FB258EED5677C1F6899F8218 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -77,8 +106,6 @@
 				C33A9C082D81627000E203D1 /* GPUImageAdventures */,
 			);
 			name = GPUImageAdventures;
-			packageProductDependencies = (
-			);
 			productName = GPUImageAdventures;
 			productReference = C33A9C062D81627000E203D1 /* GPUImageAdventures.app */;
 			productType = "com.apple.product-type.application";
@@ -94,6 +121,7 @@
 				TargetAttributes = {
 					C33A9C052D81627000E203D1 = {
 						CreatedOnToolsVersion = 16.2;
+						LastSwiftMigration = 1620;
 					};
 				};
 			};
@@ -126,6 +154,48 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		2E7043BC0BB8F0942CA8A675 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-GPUImageAdventures-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		FB258EED5677C1F6899F8218 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-GPUImageAdventures/Pods-GPUImageAdventures-resources-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Copy Pods Resources";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-GPUImageAdventures/Pods-GPUImageAdventures-resources-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-GPUImageAdventures/Pods-GPUImageAdventures-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		C33A9C022D81627000E203D1 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -139,12 +209,17 @@
 /* Begin XCBuildConfiguration section */
 		C33A9C1F2D81627200E203D1 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0C0A3A9AA03AC581893868CD /* Pods-GPUImageAdventures.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = X2SFM978L8;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SELECTED_FILES = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GPUImageAdventures/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -160,18 +235,25 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.huya.GPUImageAdventures;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
 		C33A9C202D81627200E203D1 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = ECBE2BC6BF6C19EA42F39EB2 /* Pods-GPUImageAdventures.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = X2SFM978L8;
+				ENABLE_APP_SANDBOX = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				ENABLE_USER_SELECTED_FILES = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = GPUImageAdventures/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -187,6 +269,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.huya.GPUImageAdventures;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
