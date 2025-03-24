@@ -12,11 +12,14 @@
 #import <Masonry/Masonry.h>
 
 #import "FishEyeFilter.h"
+#import "GaussianGrayscaleSingleFilter.h"
+
+typedef GPUImageFilter *(^FilterInitBlock)(void);
 
 @interface FilterInfo : NSObject
 @property (nonatomic, strong) NSString *filterName;
 @property (nonatomic, strong) NSString *filterDescription;
-@property (nonatomic, strong) Class cls;
+@property (nonatomic, copy) FilterInitBlock filterInitBlock;
 
 @property (nonatomic, strong) NSString *displayString;
 @end
@@ -25,7 +28,7 @@
 
 - (NSString *)displayString
 {
-    return [NSString stringWithFormat:@"%@\n%@", self.filterDescription, NSStringFromClass(self.cls)];
+    return [NSString stringWithFormat:@"%@\n%@", self.filterDescription, self.filterName];
 }
 
 @end
@@ -223,7 +226,7 @@
     // 初始化第一个滤镜
     GPUImageFilter *currentFilter = nil;
     for (FilterInfo *info in self.selectedFilters) {
-        GPUImageFilter *filter = [[info.cls alloc] init];
+        GPUImageFilter *filter = info.filterInitBlock();
         if (currentFilter) {
             // 将当前滤镜连接到上一个滤镜
             [currentFilter addTarget:filter];
@@ -255,110 +258,185 @@
     NSMutableArray<FilterInfo *> *filters = [NSMutableArray array];
     
     //自定义滤镜
-    [filters addObject:[self createFilterInfoWithName:@"FishEye" description:@"鱼眼效果(自定义)" cls:[FishEyeFilter class]]];
+    [filters addObject:[self createFilterInfoWithName:@"FishEye" description:@"鱼眼效果(自定义)" initBlock:^GPUImageFilter *{
+        FishEyeFilter *filter = [[FishEyeFilter alloc] init];
+        return filter;
+    }]];
+    [filters addObject:[self createFilterInfoWithName:@"GaussianGrayscaleSingle" description:@"灰度模糊(自定义)" initBlock:^GPUImageFilter *{
+        GaussianGrayscaleSingleFilter *filter = [[GaussianGrayscaleSingleFilter alloc] init];
+        filter.blurRadiusInPixels = 5;
+        return filter;
+    }]];
 
-    // 颜色调整滤镜
-    [filters addObject:[self createFilterInfoWithName:@"Brightness" description:@"调整亮度" cls:[GPUImageBrightnessFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Contrast" description:@"调整对比度" cls:[GPUImageContrastFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Saturation" description:@"调整饱和度" cls:[GPUImageSaturationFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Exposure" description:@"调整曝光" cls:[GPUImageExposureFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Gamma" description:@"调整伽马值" cls:[GPUImageGammaFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Levels" description:@"调整色阶" cls:[GPUImageLevelsFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"RGB" description:@"调整红、绿、蓝通道的强度" cls:[GPUImageRGBFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Hue" description:@"调整色调" cls:[GPUImageHueFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"White Balance" description:@"调整白平衡" cls:[GPUImageWhiteBalanceFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Highlight Shadow" description:@"调整高光和阴影" cls:[GPUImageHighlightShadowFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Color Invert" description:@"反色滤镜" cls:[GPUImageColorInvertFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Grayscale" description:@"灰度滤镜" cls:[GPUImageGrayscaleFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Monochrome" description:@"单色滤镜" cls:[GPUImageMonochromeFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"False Color" description:@"双色调滤镜" cls:[GPUImageFalseColorFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Haze" description:@"雾化效果" cls:[GPUImageHazeFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Sepia" description:@"复古滤镜" cls:[GPUImageSepiaFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Opacity" description:@"调整透明度" cls:[GPUImageOpacityFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Solid Color" description:@"生成纯色图像" cls:[GPUImageSolidColorGenerator class]]];
+    // Brightness
+    [filters addObject:[self createFilterInfoWithName:@"Brightness"
+                                         description:@"调整亮度"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageBrightnessFilter *filter = [[GPUImageBrightnessFilter alloc] init];
+        filter.brightness = 0.2;
+        return filter;
+    }]];
 
-    // 图像处理滤镜
-    [filters addObject:[self createFilterInfoWithName:@"Box Blur" description:@"方框模糊" cls:[GPUImageBoxBlurFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Gaussian Blur" description:@"高斯模糊" cls:[GPUImageGaussianBlurFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Median" description:@"中值滤波" cls:[GPUImageMedianFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Bilateral" description:@"双边滤波" cls:[GPUImageBilateralFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Sharpen" description:@"锐化滤镜" cls:[GPUImageSharpenFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Unsharp Mask" description:@"反锐化掩模滤镜" cls:[GPUImageUnsharpMaskFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Sobel Edge Detection" description:@"Sobel 边缘检测" cls:[GPUImageSobelEdgeDetectionFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Canny Edge Detection" description:@"Canny 边缘检测" cls:[GPUImageCannyEdgeDetectionFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Prewitt Edge Detection" description:@"Prewitt 边缘检测" cls:[GPUImagePrewittEdgeDetectionFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"XY Derivative" description:@"XY 方向导数边缘检测" cls:[GPUImageXYDerivativeFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Harris Corner Detection" description:@"Harris 角点检测" cls:[GPUImageHarrisCornerDetectionFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Noble Corner Detection" description:@"Noble 角点检测" cls:[GPUImageNobleCornerDetectionFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Shi-Tomasi Feature Detection" description:@"Shi-Tomasi 角点检测" cls:[GPUImageShiTomasiFeatureDetectionFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Motion Blur" description:@"运动模糊" cls:[GPUImageMotionBlurFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Zoom Blur" description:@"缩放模糊" cls:[GPUImageZoomBlurFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Tilt Shift" description:@"移轴模糊" cls:[GPUImageTiltShiftFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Vignette" description:@"暗角效果" cls:[GPUImageVignetteFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Swirl" description:@"漩涡效果" cls:[GPUImageSwirlFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Bulge Distortion" description:@"凸起扭曲效果" cls:[GPUImageBulgeDistortionFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Pinch Distortion" description:@"收缩扭曲效果" cls:[GPUImagePinchDistortionFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Stretch Distortion" description:@"拉伸扭曲效果" cls:[GPUImageStretchDistortionFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Sphere Refraction" description:@"球形折射效果" cls:[GPUImageSphereRefractionFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Glass Sphere" description:@"玻璃球效果" cls:[GPUImageGlassSphereFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Toon" description:@"卡通效果" cls:[GPUImageToonFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Posterize" description:@"色调分离效果" cls:[GPUImagePosterizeFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Emboss" description:@"浮雕效果" cls:[GPUImageEmbossFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Halftone" description:@"半色调效果" cls:[GPUImageHalftoneFilter class]]];
+    // Contrast
+    [filters addObject:[self createFilterInfoWithName:@"Contrast"
+                                         description:@"调整对比度"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageContrastFilter *filter = [[GPUImageContrastFilter alloc] init];
+        filter.contrast = 1.5;
+        return filter;
+    }]];
 
-    // 混合滤镜
-    [filters addObject:[self createFilterInfoWithName:@"Alpha Blend" description:@"透明度混合" cls:[GPUImageAlphaBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Dissolve Blend" description:@"溶解混合" cls:[GPUImageDissolveBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Multiply Blend" description:@"正片叠底混合" cls:[GPUImageMultiplyBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Add Blend" description:@"叠加混合" cls:[GPUImageAddBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Subtract Blend" description:@"减去混合" cls:[GPUImageSubtractBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Divide Blend" description:@"划分混合" cls:[GPUImageDivideBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Overlay Blend" description:@"叠加混合" cls:[GPUImageOverlayBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Darken Blend" description:@"变暗混合" cls:[GPUImageDarkenBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Lighten Blend" description:@"变亮混合" cls:[GPUImageLightenBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Screen Blend" description:@"屏幕混合" cls:[GPUImageScreenBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Exclusion Blend" description:@"排除混合" cls:[GPUImageExclusionBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Difference Blend" description:@"差异混合" cls:[GPUImageDifferenceBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Hard Light Blend" description:@"强光混合" cls:[GPUImageHardLightBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Soft Light Blend" description:@"柔光混合" cls:[GPUImageSoftLightBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Chroma Key Blend" description:@"色度键混合" cls:[GPUImageChromaKeyBlendFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Mask" description:@"遮罩混合" cls:[GPUImageMaskFilter class]]];
+    // Saturation
+    [filters addObject:[self createFilterInfoWithName:@"Saturation"
+                                         description:@"调整饱和度"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageSaturationFilter *filter = [[GPUImageSaturationFilter alloc] init];
+        filter.saturation = 1.5;
+        return filter;
+    }]];
 
-    // 视觉效果滤镜
-    [filters addObject:[self createFilterInfoWithName:@"Pixellate" description:@"像素化效果" cls:[GPUImagePixellateFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Polar Pixellate" description:@"极坐标像素化效果" cls:[GPUImagePolarPixellateFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Polka Dot" description:@"圆点效果" cls:[GPUImagePolkaDotFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Crosshatch" description:@"交叉线效果" cls:[GPUImageCrosshatchFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Sketch" description:@"素描效果" cls:[GPUImageSketchFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Threshold Sketch" description:@"阈值素描效果" cls:[GPUImageThresholdSketchFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Smooth Toon" description:@"平滑卡通效果" cls:[GPUImageSmoothToonFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Kuwahara" description:@"桑原滤波" cls:[GPUImageKuwaharaFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Mosaic" description:@"马赛克效果" cls:[GPUImageMosaicFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Local Binary Pattern" description:@"局部二值模式效果" cls:[GPUImageLocalBinaryPatternFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Perlin Noise" description:@"Perlin 噪声效果" cls:[GPUImagePerlinNoiseFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"JFA Voronoi" description:@"Voronoi 图效果" cls:[GPUImageJFAVoronoiFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Voronoi Consumer" description:@"Voronoi 图消费者效果" cls:[GPUImageVoronoiConsumerFilter class]]];
+    // Exposure
+    [filters addObject:[self createFilterInfoWithName:@"Exposure"
+                                         description:@"调整曝光"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageExposureFilter *filter = [[GPUImageExposureFilter alloc] init];
+        filter.exposure = 0.3;
+        return filter;
+    }]];
 
-    // 其他滤镜
-    [filters addObject:[self createFilterInfoWithName:@"Transform" description:@"图像变换" cls:[GPUImageTransformFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Crop" description:@"图像裁剪" cls:[GPUImageCropFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Lanczos Resampling" description:@"Lanczos 重采样" cls:[GPUImageLanczosResamplingFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Histogram" description:@"直方图生成" cls:[GPUImageHistogramFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Histogram Equalization" description:@"直方图均衡化" cls:[GPUImageHistogramEqualizationFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Adaptive Threshold" description:@"自适应阈值" cls:[GPUImageAdaptiveThresholdFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Average Luminance Threshold" description:@"平均亮度阈值" cls:[GPUImageAverageLuminanceThresholdFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"Low Pass" description:@"低通滤波" cls:[GPUImageLowPassFilter class]]];
-    [filters addObject:[self createFilterInfoWithName:@"High Pass" description:@"高通滤波" cls:[GPUImageHighPassFilter class]]];
+    // Gamma
+    [filters addObject:[self createFilterInfoWithName:@"Gamma"
+                                         description:@"伽马校正"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageGammaFilter *filter = [[GPUImageGammaFilter alloc] init];
+        filter.gamma = 2.0;
+        return filter;
+    }]];
+
+    // Hue
+    [filters addObject:[self createFilterInfoWithName:@"Hue"
+                                         description:@"色调调整"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageHueFilter *filter = [[GPUImageHueFilter alloc] init];
+        filter.hue = 90.0;
+        return filter;
+    }]];
+
+    // Sharpen
+    [filters addObject:[self createFilterInfoWithName:@"Sharpen"
+                                         description:@"锐化处理"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageSharpenFilter *filter = [[GPUImageSharpenFilter alloc] init];
+        filter.sharpness = 1.0;
+        return filter;
+    }]];
+
+    // Gaussian Blur
+    [filters addObject:[self createFilterInfoWithName:@"GaussianBlur"
+                                         description:@"高斯模糊"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageGaussianBlurFilter *filter = [[GPUImageGaussianBlurFilter alloc] init];
+        filter.blurRadiusInPixels = 5.0;
+        return filter;
+    }]];
+
+    // Pixellate
+    [filters addObject:[self createFilterInfoWithName:@"Pixellate"
+                                         description:@"像素化"
+                                           initBlock:^GPUImageFilter *{
+        GPUImagePixellateFilter *filter = [[GPUImagePixellateFilter alloc] init];
+        filter.fractionalWidthOfAPixel = 0.02;
+        return filter;
+    }]];
+
+    // Sepia
+    [filters addObject:[self createFilterInfoWithName:@"Sepia"
+                                         description:@"怀旧棕色(Sepia)"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageSepiaFilter *filter = [[GPUImageSepiaFilter alloc] init];
+        filter.intensity = 1.0;
+        return filter;
+    }]];
+
+    // Grayscale
+    [filters addObject:[self createFilterInfoWithName:@"Grayscale"
+                                         description:@"灰度滤镜"
+                                           initBlock:^GPUImageFilter *{
+        return [[GPUImageGrayscaleFilter alloc] init];
+    }]];
+
+    // Sketch
+    [filters addObject:[self createFilterInfoWithName:@"Sketch"
+                                         description:@"素描"
+                                           initBlock:^GPUImageFilter *{
+        return [[GPUImageSketchFilter alloc] init];
+    }]];
+
+    // Emboss
+    [filters addObject:[self createFilterInfoWithName:@"Emboss"
+                                         description:@"浮雕"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageEmbossFilter *filter = [[GPUImageEmbossFilter alloc] init];
+        filter.intensity = 1.0;
+        return filter;
+    }]];
+
+    // Vignette
+    [filters addObject:[self createFilterInfoWithName:@"Vignette"
+                                         description:@"暗角效果"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageVignetteFilter *filter = [[GPUImageVignetteFilter alloc] init];
+        filter.vignetteStart = 0.3;
+        filter.vignetteEnd = 0.75;
+        return filter;
+    }]];
+
+    // ColorInvert
+    [filters addObject:[self createFilterInfoWithName:@"ColorInvert"
+                                         description:@"颜色反转"
+                                           initBlock:^GPUImageFilter *{
+        return [[GPUImageColorInvertFilter alloc] init];
+    }]];
+
+    // Monochrome
+    [filters addObject:[self createFilterInfoWithName:@"Monochrome"
+                                         description:@"单色滤镜"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageMonochromeFilter *filter = [[GPUImageMonochromeFilter alloc] init];
+        filter.color = (GPUVector4){0.6, 0.45, 0.3, 1.0}; //棕色系
+        filter.intensity = 1.0;
+        return filter;
+    }]];
+
+    // Levels
+    [filters addObject:[self createFilterInfoWithName:@"Levels"
+                                         description:@"色阶调整"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageLevelsFilter *filter = [[GPUImageLevelsFilter alloc] init];
+        [filter setMin:0.0 gamma:1.0 max:0.8 minOut:0.1 maxOut:1.0];
+        return filter;
+    }]];
+
+    // RGB
+    [filters addObject:[self createFilterInfoWithName:@"RGB"
+                                         description:@"RGB通道调整"
+                                           initBlock:^GPUImageFilter *{
+        GPUImageRGBFilter *filter = [[GPUImageRGBFilter alloc] init];
+        filter.red = 1.0; filter.green = 0.8; filter.blue = 0.8;
+        return filter;
+    }]];
 
     return [filters copy];
 }
 
-- (FilterInfo *)createFilterInfoWithName:(NSString *)name description:(NSString *)description cls:(Class)cls
+- (FilterInfo *)createFilterInfoWithName:(NSString *)name
+                             description:(NSString *)description
+                            initBlock:(FilterInitBlock)initBlock
 {
     FilterInfo *info = [[FilterInfo alloc] init];
     info.filterName = name;
     info.filterDescription = description;
-    info.cls = cls;
+    info.filterInitBlock = initBlock;
     return info;
 }
 
