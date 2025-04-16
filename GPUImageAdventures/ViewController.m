@@ -40,7 +40,7 @@ typedef GPUImageFilter *(^FilterInitBlock)(void);
 @property (nonatomic, strong) NSMutableArray<FilterInfo *> *selectedFilters;
 
 @property (nonatomic, strong) UIImageView *sourceImageView;
-@property (nonatomic, strong) UIImageView *filteredImageView;
+@property (nonatomic, strong) GPUImageView *filteredImageView;
 @property (nonatomic, strong) UILabel *filterLabel;
 
 @end
@@ -51,6 +51,22 @@ typedef GPUImageFilter *(^FilterInitBlock)(void);
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     [self setupSubview];
+    
+    //官方使用示例
+//    UIImage *inputImage = [UIImage imageNamed:@"llf.jpg"];
+//
+//    GPUImagePicture *stillImageSource = [[GPUImagePicture alloc] initWithImage:inputImage];
+//    GPUImageSepiaFilter *stillImageFilter = [[GPUImageSepiaFilter alloc] init];
+//
+//    [stillImageSource addTarget:stillImageFilter];
+//    [stillImageFilter useNextFrameForImageCapture];
+//    [stillImageSource processImage];
+//
+//    UIImage *currentFilteredVideoFrame = [stillImageFilter imageFromCurrentFramebuffer];
+//    
+//    UIImageView *sourceImageView = [[UIImageView alloc] initWithImage:currentFilteredVideoFrame];
+//    sourceImageView.frame = self.view.bounds;
+//    [self.view addSubview:sourceImageView];
 }
 
 - (void)setupSubview
@@ -83,8 +99,8 @@ typedef GPUImageFilter *(^FilterInitBlock)(void);
         make.bottom.mas_equalTo(self.view.mas_centerY);
     }];
     
-    self.filteredImageView = [[UIImageView alloc] init];
-    self.filteredImageView.contentMode = UIViewContentModeScaleAspectFit;
+    self.filteredImageView = [[GPUImageView alloc] init];
+    self.filteredImageView.fillMode = kGPUImageFillModePreserveAspectRatio;
     [self.view addSubview:self.filteredImageView];
     [self.filteredImageView mas_makeConstraints:^(MASConstraintMaker *make) {
         make.leading.trailing.mas_equalTo(self.sourceImageView);
@@ -123,7 +139,7 @@ typedef GPUImageFilter *(^FilterInitBlock)(void);
     }
     [self.filterCollectionView reloadData];
     self.filterLabel.text = @"Filter";
-    self.filteredImageView.image = nil;
+//    [self.filteredImageView stop];
 }
 
 - (NSMutableArray<FilterInfo *> *)selectedFilters
@@ -239,15 +255,17 @@ typedef GPUImageFilter *(^FilterInitBlock)(void);
         
         self.filterLabel.text = [NSString stringWithFormat:@"%@\n%@", self.filterLabel.text, info.filterName];
     }
+    
+    [currentFilter addTarget:self.filteredImageView];
 
     // 确保最后一个滤镜调用 useNextFrameForImageCapture
-    [currentFilter useNextFrameForImageCapture];
+//    [currentFilter useNextFrameForImageCapture];
     // 处理图像
     [picture processImage];
 
     // 获取处理后的图像
-    UIImage *outputImage = [currentFilter imageFromCurrentFramebuffer];
-    self.filteredImageView.image = outputImage;
+//    UIImage *outputImage = [currentFilter imageFromCurrentFramebuffer];
+//    self.filteredImageView.image = outputImage;
 }
 
 
